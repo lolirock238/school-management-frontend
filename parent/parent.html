@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Dashboard - School Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/parent.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">SchoolMS - Parent</div>
+            <ul class="nav-menu">
+                <li><a onclick="showContent('dashboard-content')" class="active">Dashboard</a></li>
+                <li><a onclick="showContent('children-content')">My Children</a></li>
+                <li><a onclick="showContent('fees-content')">Fees & Payments</a></li>
+                <li><a onclick="showContent('grades-content')">Academic Progress</a></li>
+                <li><a onclick="showContent('attendance-content')">Attendance</a></li>
+                <li><a onclick="showContent('announcements-content')">Announcements</a></li>
+            </ul>
+            <div class="nav-user">
+                <span id="user-name">Parent</span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Content -->
+            <div id="dashboard-content" class="content-section active">
+                <h1>Parent Dashboard</h1>
+                <div class="welcome-card">
+                    <h2 id="parent-welcome">Welcome, Parent!</h2>
+                    <p id="parent-info">Monitor your children's progress</p>
+                </div>
+
+                <div class="stats-grid" id="parent-stats">
+                    <div class="stat-card">
+                        <h3>Children</h3>
+                        <p id="total-children">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Fees Balance</h3>
+                        <p id="total-fees-balance">KSh 0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Attendance</h3>
+                        <p id="avg-attendance">0%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>New Announcements</h3>
+                        <p id="new-announcements">0</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h2>My Children</h2>
+                        <div id="children-summary" class="children-list"></div>
+                        <button onclick="showContent('children-content')" class="btn-link">View All Children →</button>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Recent Payments</h2>
+                        <div id="recent-payments" class="recent-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Upcoming Fees</h2>
+                        <div id="upcoming-fees" class="recent-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Quick Actions</h2>
+                        <div class="quick-actions">
+                            <button onclick="showContent('fees-content')" class="btn btn-primary">Pay Fees</button>
+                            <button onclick="showContent('grades-content')" class="btn btn-primary">Check Grades</button>
+                            <button onclick="showContent('attendance-content')" class="btn btn-success">View Attendance</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Children Content -->
+            <div id="children-content" class="content-section">
+                <h1>My Children</h1>
+                <div id="children-grid" class="children-grid"></div>
+            </div>
+
+            <!-- Fees Content -->
+            <div id="fees-content" class="content-section">
+                <h1>Fees & Payments</h1>
+                
+                <div class="child-selector">
+                    <label for="fee-child-select">Select Child:</label>
+                    <select id="fee-child-select" onchange="loadChildFees()">
+                        <option value="">Choose a child</option>
+                    </select>
+                </div>
+
+                <div id="child-fees-container" style="display: none;">
+                    <div class="fees-summary-card">
+                        <div class="fee-balance-large">
+                            <h3>Total Balance</h3>
+                            <p id="child-fee-balance">KSh 0</p>
+                        </div>
+                        <div class="fee-stats">
+                            <div class="fee-stat">
+                                <span class="label">Total Fees:</span>
+                                <span class="value" id="child-total-fees">KSh 0</span>
+                            </div>
+                            <div class="fee-stat">
+                                <span class="label">Paid:</span>
+                                <span class="value" id="child-total-paid">KSh 0</span>
+                            </div>
+                            <div class="fee-stat">
+                                <span class="label">Next Due:</span>
+                                <span class="value" id="child-next-due">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fees-table-container">
+                        <h2>Fee Structure</h2>
+                        <table class="fees-table">
+                            <thead>
+                                <tr>
+                                    <th>Term</th>
+                                    <th>Total Amount</th>
+                                    <th>Paid Amount</th>
+                                    <th>Balance</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="child-fees-table-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="payment-history">
+                        <h2>Payment History</h2>
+                        <table class="payment-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Transaction ID</th>
+                                </tr>
+                            </thead>
+                            <tbody id="child-payment-history-body"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="payment-action">
+                        <button onclick="showMakePaymentModal()" class="btn btn-success">Make Payment</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grades Content -->
+            <div id="grades-content" class="content-section">
+                <h1>Academic Progress</h1>
+                
+                <div class="child-selector">
+                    <label for="grade-child-select">Select Child:</label>
+                    <select id="grade-child-select" onchange="loadChildGrades()">
+                        <option value="">Choose a child</option>
+                    </select>
+                </div>
+
+                <div id="child-grades-container" style="display: none;">
+                    <div class="grades-summary">
+                        <div class="grade-average-card">
+                            <h3>Overall Average</h3>
+                            <p id="child-overall-average">0%</p>
+                        </div>
+                        <div class="grade-average-card">
+                            <h3>Best Subject</h3>
+                            <p id="child-best-subject">-</p>
+                        </div>
+                        <div class="grade-average-card">
+                            <h3>Total Courseworks</h3>
+                            <p id="child-total-courseworks">0</p>
+                        </div>
+                    </div>
+
+                    <div class="grades-table-container">
+                        <table class="grades-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Coursework/Exam</th>
+                                    <th>Marks</th>
+                                    <th>Grade</th>
+                                    <th>Feedback</th>
+                                </tr>
+                            </thead>
+                            <tbody id="child-grades-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Content -->
+            <div id="attendance-content" class="content-section">
+                <h1>Attendance Records</h1>
+                
+                <div class="child-selector">
+                    <label for="attendance-child-select">Select Child:</label>
+                    <select id="attendance-child-select" onchange="loadChildAttendance()">
+                        <option value="">Choose a child</option>
+                    </select>
+                </div>
+
+                <div id="child-attendance-container" style="display: none;">
+                    <div class="attendance-summary-card">
+                        <div class="attendance-overall">
+                            <div class="attendance-circle" id="child-attendance-circle">
+                                <span id="child-attendance-percent">0%</span>
+                            </div>
+                            <div class="attendance-stats">
+                                <p><span id="child-attendance-present">0</span> Present</p>
+                                <p><span id="child-attendance-absent">0</span> Absent</p>
+                                <p><span id="child-attendance-late">0</span> Late</p>
+                                <p><span id="child-attendance-total">0</span> Total Days</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="attendance-calendar">
+                        <h2>Attendance History</h2>
+                        <div class="calendar-grid" id="child-attendance-calendar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcements Content -->
+            <div id="announcements-content" class="content-section">
+                <h1>School Announcements</h1>
+                
+                <div class="announcements-filters">
+                    <button onclick="filterAnnouncements('all')" class="filter-btn active">All</button>
+                    <button onclick="filterAnnouncements('parent')" class="filter-btn">For Parents</button>
+                    <button onclick="filterAnnouncements('general')" class="filter-btn">General</button>
+                </div>
+
+                <div id="announcements-list" class="announcements-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Make Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('payment-modal')">&times;</span>
+            <h2>Make Payment</h2>
+            <form id="payment-form">
+                <div class="form-group">
+                    <label for="payment-child">Select Child</label>
+                    <select id="payment-child" required>
+                        <option value="">Choose child</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-term">Select Term</label>
+                    <select id="payment-term" required>
+                        <option value="">Select Term</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-amount">Amount (KSh)</label>
+                    <input type="number" id="payment-amount" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-method">Payment Method</label>
+                    <select id="payment-method" required>
+                        <option value="M-Pesa">M-Pesa</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="transaction-id">Transaction ID (Optional)</label>
+                    <input type="text" id="transaction-id">
+                </div>
+                <button type="submit" class="btn btn-success">Process Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="js/parent.js"></script>
+</body>
+</html>

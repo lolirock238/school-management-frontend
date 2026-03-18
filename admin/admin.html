@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - School Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">SchoolMS - Admin</div>
+            <ul class="nav-menu">
+                <li><a onclick="showContent('dashboard-content')" class="active">Dashboard</a></li>
+                <li><a onclick="showContent('students-content')">Students</a></li>
+                <li><a onclick="showContent('teachers-content')">Teachers</a></li>
+                <li><a onclick="showContent('classes-content')">Classes</a></li>
+                <li><a onclick="showContent('subjects-content')">Subjects</a></li>
+                <li><a onclick="showContent('fees-content')">Fees</a></li>
+                <li><a onclick="showContent('announcements-content')">Announcements</a></li>
+            </ul>
+            <div class="nav-user">
+                <span id="user-name">Admin</span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Content -->
+            <div id="dashboard-content" class="content-section active">
+                <h1>Dashboard</h1>
+                <div class="stats-grid" id="admin-stats">
+                    <div class="stat-card">
+                        <h3>Total Students</h3>
+                        <p id="total-students">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Teachers</h3>
+                        <p id="total-teachers">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Classes</h3>
+                        <p id="total-classes">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Subjects</h3>
+                        <p id="total-subjects">0</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h2>Recent Students</h2>
+                        <div id="recent-students" class="recent-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Pending Fees</h2>
+                        <div id="pending-fees" class="recent-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Upcoming Exams</h2>
+                        <div id="upcoming-exams" class="recent-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Quick Actions</h2>
+                        <div class="quick-actions">
+                            <button onclick="showContent('students-content')" class="btn btn-primary">Manage Students</button>
+                            <button onclick="showContent('teachers-content')" class="btn btn-primary">Manage Teachers</button>
+                            <button onclick="showContent('classes-content')" class="btn btn-primary">Manage Classes</button>
+                            <button onclick="showContent('fees-content')" class="btn btn-success">Record Payment</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Content -->
+            <div id="students-content" class="content-section">
+                <div class="section-header">
+                    <h1>Students Management</h1>
+                    <button onclick="showAddStudentModal()" class="btn btn-primary">Add New Student</button>
+                </div>
+                
+                <div class="search-bar">
+                    <input type="text" id="student-search" placeholder="Search students..." onkeyup="searchStudents()">
+                    <select id="class-filter" onchange="filterStudents()">
+                        <option value="">All Classes</option>
+                    </select>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Admission No.</th>
+                            <th>Name</th>
+                            <th>Class</th>
+                            <th>Gender</th>
+                            <th>Parent</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="students-table-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Teachers Content -->
+            <div id="teachers-content" class="content-section">
+                <div class="section-header">
+                    <h1>Teachers Management</h1>
+                    <button onclick="showAddTeacherModal()" class="btn btn-primary">Add New Teacher</button>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Employee ID</th>
+                            <th>Name</th>
+                            <th>Qualification</th>
+                            <th>Subjects</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teachers-table-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Classes Content -->
+            <div id="classes-content" class="content-section">
+                <div class="section-header">
+                    <h1>Classes Management</h1>
+                    <button onclick="showAddClassModal()" class="btn btn-primary">Add New Class</button>
+                </div>
+
+                <div class="classes-grid" id="classes-grid"></div>
+            </div>
+
+            <!-- Subjects Content -->
+            <div id="subjects-content" class="content-section">
+                <div class="section-header">
+                    <h1>Subjects Management</h1>
+                    <button onclick="showAddSubjectModal()" class="btn btn-primary">Add New Subject</button>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Code</th>
+                            <th>Subject Name</th>
+                            <th>Class</th>
+                            <th>Teacher</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subjects-table-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Fees Content -->
+            <div id="fees-content" class="content-section">
+                <div class="section-header">
+                    <h1>Fees Management</h1>
+                    <button onclick="showAddFeeModal()" class="btn btn-success">Record Payment</button>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="fee-search" placeholder="Search student...">
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Term</th>
+                            <th>Total Amount</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fees-table-body"></tbody>
+                </table>
+            </div>
+
+            <!-- Announcements Content -->
+            <div id="announcements-content" class="content-section">
+                <div class="section-header">
+                    <h1>Announcements</h1>
+                    <button onclick="showAddAnnouncementModal()" class="btn btn-primary">New Announcement</button>
+                </div>
+
+                <div id="announcements-list" class="announcements-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals (Add/Edit) -->
+    <div id="student-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('student-modal')">&times;</span>
+            <h2>Add/Edit Student</h2>
+            <form id="student-form">
+                <!-- Form fields -->
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

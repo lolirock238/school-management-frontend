@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - School Management System</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="css/teacher.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">SchoolMS - Teacher</div>
+            <ul class="nav-menu">
+                <li><a onclick="showContent('dashboard-content')" class="active">Dashboard</a></li>
+                <li><a onclick="showContent('subjects-content')">My Subjects</a></li>
+                <li><a onclick="showContent('courseworks-content')">Courseworks</a></li>
+                <li><a onclick="showContent('attendance-content')">Attendance</a></li>
+                <li><a onclick="showContent('timetable-content')">Timetable</a></li>
+                <li><a onclick="showContent('grades-content')">Grades</a></li>
+            </ul>
+            <div class="nav-user">
+                <span id="user-name">Teacher</span>
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Content -->
+            <div id="dashboard-content" class="content-section active">
+                <h1>Teacher Dashboard</h1>
+                <div class="stats-grid" id="teacher-stats">
+                    <div class="stat-card">
+                        <h3>My Subjects</h3>
+                        <p id="total-subjects">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Students</h3>
+                        <p id="total-students">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Courseworks</h3>
+                        <p id="active-courseworks">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Grading</h3>
+                        <p id="pending-grading">0</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h2>My Subjects</h2>
+                        <div id="teacher-subjects-list" class="subjects-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Recent Courseworks</h2>
+                        <div id="recent-courseworks" class="recent-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Today's Classes</h2>
+                        <div id="today-classes" class="timetable-list"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2>Quick Actions</h2>
+                        <div class="quick-actions">
+                            <button onclick="showAddCourseworkModal()" class="btn btn-primary">Post Coursework</button>
+                            <button onclick="showContent('attendance-content')" class="btn btn-primary">Mark Attendance</button>
+                            <button onclick="showContent('grades-content')" class="btn btn-success">Enter Grades</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Subjects Content -->
+            <div id="subjects-content" class="content-section">
+                <h1>My Subjects</h1>
+                <div id="subjects-grid" class="subjects-grid"></div>
+            </div>
+
+            <!-- Courseworks Content -->
+            <div id="courseworks-content" class="content-section">
+                <div class="section-header">
+                    <h1>Courseworks Management</h1>
+                    <button onclick="showAddCourseworkModal()" class="btn btn-primary">Post New Coursework</button>
+                </div>
+                
+                <div class="filter-tabs">
+                    <button onclick="filterCourseworks('all')" class="filter-btn active">All</button>
+                    <button onclick="filterCourseworks('assignment')" class="filter-btn">Assignments</button>
+                    <button onclick="filterCourseworks('cat')" class="filter-btn">CATs</button>
+                    <button onclick="filterCourseworks('exam')" class="filter-btn">Exams</button>
+                </div>
+
+                <div id="courseworks-grid" class="courseworks-grid"></div>
+            </div>
+
+            <!-- Attendance Content -->
+            <div id="attendance-content" class="content-section">
+                <h1>Mark Attendance</h1>
+                
+                <div class="attendance-controls">
+                    <select id="attendance-subject" onchange="loadAttendanceStudents()">
+                        <option value="">Select Subject</option>
+                    </select>
+                    <select id="attendance-class" onchange="loadAttendanceStudents()">
+                        <option value="">Select Class</option>
+                    </select>
+                    <input type="date" id="attendance-date" value="" onchange="loadAttendanceStudents()">
+                </div>
+
+                <div class="attendance-table-container">
+                    <table class="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Admission No.</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-table-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="attendance-actions">
+                    <button onclick="saveAttendance()" class="btn btn-success">Save Attendance</button>
+                </div>
+            </div>
+
+            <!-- Timetable Content -->
+            <div id="timetable-content" class="content-section">
+                <h1>My Timetable</h1>
+                
+                <div class="timetable-grid" id="timetable-grid"></div>
+            </div>
+
+            <!-- Grades Content -->
+            <div id="grades-content" class="content-section">
+                <h1>Enter Grades</h1>
+                
+                <div class="grades-controls">
+                    <select id="grade-subject" onchange="loadGradeStudents()">
+                        <option value="">Select Subject</option>
+                    </select>
+                    <select id="grade-coursework" onchange="loadGradeStudents()">
+                        <option value="">Select Coursework/Exam</option>
+                    </select>
+                </div>
+
+                <div class="grades-table-container">
+                    <table class="grades-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Admission No.</th>
+                                <th>Submission</th>
+                                <th>Marks (/{max})</th>
+                                <th>Feedback</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grades-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Coursework Modal -->
+    <div id="coursework-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('coursework-modal')">&times;</span>
+            <h2>Post New Coursework</h2>
+            <form id="coursework-form">
+                <div class="form-group">
+                    <label for="coursework-subject">Subject</label>
+                    <select id="coursework-subject" required>
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="coursework-title">Title</label>
+                    <input type="text" id="coursework-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="coursework-description">Description</label>
+                    <textarea id="coursework-description" rows="4" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="coursework-type">Type</label>
+                        <select id="coursework-type" required>
+                            <option value="ASSIGNMENT">Assignment</option>
+                            <option value="CAT">CAT</option>
+                            <option value="EXAM">Exam</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="coursework-marks">Total Marks</label>
+                        <input type="number" id="coursework-marks" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="coursework-duedate">Due Date</label>
+                    <input type="datetime-local" id="coursework-duedate" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Post Coursework</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Submissions Modal -->
+    <div id="submissions-modal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close" onclick="closeModal('submissions-modal')">&times;</span>
+            <h2 id="submissions-title">Student Submissions</h2>
+            <div id="submissions-list" class="submissions-list"></div>
+        </div>
+    </div>
+
+   <script src="../js/api.js"></script>
+   <script src="../js/auth.js"></script>
+   <script src="js/teacher.js"></script>
+</body>
+</html>
