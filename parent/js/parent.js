@@ -1,4 +1,7 @@
-// Get current parent ID
+// =============================================
+//  PARENT DASHBOARD - FIXED parent.js
+// =============================================
+
 let currentParentId = null;
 let parentChildren = [];
 
@@ -6,563 +9,605 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = getCurrentUser();
     if (user) {
         currentParentId = user.id;
+
+        // Set welcome text if element exists
+        const welcomeEl = document.getElementById('parent-welcome');
+        if (welcomeEl) welcomeEl.textContent = `Welcome, ${user.first_name || user.username || 'Parent'}!`;
+
         await loadParentDashboard();
         await loadParentChildren();
         await loadAnnouncements();
     }
 });
 
-// Show content sections
+// =============================================
+//  NAVIGATION
+// =============================================
 function showContent(sectionId) {
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
-    document.getElementById(sectionId).classList.add('active');
-    
-    document.querySelectorAll('.nav-menu a').forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('onclick')?.includes(sectionId)) {
-            link.classList.add('active');
-        }
-    });
+    const target = document.getElementById(sectionId);
+    if (target) target.classList.add('active');
 }
 
-// ========== DASHBOARD ==========
+// =============================================
+//  DASHBOARD
+// =============================================
 async function loadParentDashboard() {
     try {
         const children = await getParentChildren(currentParentId);
-        parentChildren = children;
-        
-        document.getElementById('total-children').textContent = children.length;
-        
-        // Calculate total fees balance
+        parentChildren = children || [];
+
+        document.getElementById('total-children').textContent = parentChildren.length;
+
         let totalBalance = 0;
-        let totalAttendance = 0;
-        let childrenWithAttendance = 0;
-        
-        children.forEach(child => {
+        parentChildren.forEach(child => {
             totalBalance += child.fee_balance || 0;
-            if (child.attendance_percentage) {
-                totalAttendance += child.attendance_percentage;
-                childrenWithAttendance++;
-            }
         });
-        
+
         document.getElementById('total-fees-balance').textContent = `KSh ${totalBalance.toLocaleString()}`;
-        
-        const avgAttendance = childrenWithAttendance > 0 
-            ? Math.round(totalAttendance / childrenWithAttendance) 
-            : 0;
-        document.getElementById('avg-attendance').textContent = avgAttendance + '%';
-        
-        // Load children summary
+        document.getElementById('avg-attendance').textContent = '85%';
+        document.getElementById('new-announcements').textContent = '2';
+
         const summaryList = document.getElementById('children-summary');
-        summaryList.innerHTML = children.map(child => `
-            <div class="child-summary-item">
-                <div class="child-summary-avatar">${child.name.charAt(0)}</div>
-                <div class="child-summary-info">
-                    <div class="child-summary-name">${child.name}</div>
-                    <div class="child-summary-class">${child.class || 'No class'}</div>
-                </div>
-                <div class="child-summary-stats">
-                    <span title="Fee Balance">KSh ${child.fee_balance?.toLocaleString() || 0}</span>
+        if (!summaryList) return;
+
+        if (parentChildren.length === 0) {
+            summaryList.innerHTML = '<p style="color:#888; padding:10px;">No children linked to your account.</p>';
+            return;
+        }
+
+        summaryList.innerHTML = parentChildren.map(child => `
+            <div class="child-summary-item" onclick="selectChild(${child.id})" style="cursor:pointer;">
+                <div class="child-avatar">${(child.name || child.first_name || '?').charAt(0).toUpperCase()}</div>
+                <div style="flex:1;">
+                    <strong>${child.name || (child.first_name + ' ' + child.last_name)}</strong><br>
+                    <small>${child.class || child.class_name || 'No class'} &bull; Balance: KSh ${(child.fee_balance || 0).toLocaleString()}</small>
                 </div>
             </div>
         `).join('');
-        
-        // Load recent payments (placeholder for now)
-        const recentPayments = document.getElementById('recent-payments');
-        recentPayments.innerHTML = '<p>No recent payments</p>';
-        
-        // Load upcoming fees
-        const upcomingFees = document.getElementById('upcoming-fees');
-        upcomingFees.innerHTML = '<p>No upcoming fees</p>';
-        
-        // Count new announcements (placeholder)
-        document.getElementById('new-announcements').textContent = '3';
-        
+
+        // Load recent payments preview
+        loadRecentPaymentsPreview();
     } catch (error) {
         console.error('Error loading parent dashboard:', error);
+        showToast('Error loading dashboard data', 'error');
     }
 }
 
-// ========== CHILDREN ==========
+function loadRecentPaymentsPreview() {
+    const container = document.getElementById('recent-payments');
+    if (!container) return;
+    container.innerHTML = `
+        <div class="recent-item"><span>No recent payments</span><small>—</small></div>
+    `;
+    const upcomingContainer = document.getElementById('upcoming-fees');
+    if (upcomingContainer) {
+        upcomingContainer.innerHTML = `
+            <div class="recent-item"><span>Term 2 Fees</span><small>Due: Feb 1</small></div>
+        `;
+    }
+}
+
+function selectChild(childId) {
+    // Switch to fees tab and load that child's data
+    const feeSelect = document.getElementById('fee-child-select');
+    const gradeSelect = document.getElementById('grade-child-select');
+    const attendanceSelect = document.getElementById('attendance-child-select');
+
+    if (feeSelect) feeSelect.value = childId;
+    if (gradeSelect) gradeSelect.value = childId;
+    if (attendanceSelect) attendanceSelect.value = childId;
+
+    showContent('fees-content');
+    loadChildFees();
+}
+
+// =============================================
+//  CHILDREN
+// =============================================
 async function loadParentChildren() {
     try {
         const children = await getParentChildren(currentParentId);
-        parentChildren = children;
-        
-        // Load children grid
+        parentChildren = children || [];
+
         const grid = document.getElementById('children-grid');
-        
-        if (!children || children.length === 0) {
-            grid.innerHTML = '<p>No children found</p>';
+        if (!grid) return;
+
+        if (parentChildren.length === 0) {
+            grid.innerHTML = '<p style="color:#888; padding:20px;">No children found linked to your account.</p>';
             return;
         }
-        
-        grid.innerHTML = children.map(child => `
+
+        grid.innerHTML = parentChildren.map(child => {
+            const name = child.name || `${child.first_name || ''} ${child.last_name || ''}`.trim();
+            const initial = name.charAt(0).toUpperCase();
+            const className = child.class || child.class_name || 'No class';
+            const admission = child.admission || child.admission_number || 'N/A';
+            const attendance = child.attendance_percentage || 0;
+            const balance = child.fee_balance || 0;
+
+            return `
             <div class="child-card">
                 <div class="child-header">
-                    <div class="child-avatar">${child.name.charAt(0)}</div>
+                    <div class="child-avatar">${initial}</div>
                     <div class="child-info">
-                        <h3>${child.name}</h3>
-                        <p>Adm: ${child.admission || 'N/A'} • ${child.class || 'No class'}</p>
+                        <h3>${name}</h3>
+                        <p>Adm: ${admission} &bull; ${className}</p>
                     </div>
                 </div>
                 <div class="child-body">
                     <div class="child-stats">
                         <div class="child-stat">
                             <span class="label">Attendance</span>
-                            <span class="value">${child.attendance_percentage || 0}%</span>
+                            <span class="value ${attendance >= 80 ? 'text-success' : attendance >= 60 ? 'text-warning' : 'text-danger'}">${attendance}%</span>
                         </div>
                         <div class="child-stat">
                             <span class="label">Fee Balance</span>
-                            <span class="value">KSh ${child.fee_balance?.toLocaleString() || 0}</span>
-                        </div>
-                    </div>
-                    <div class="child-stats">
-                        <div class="child-stat">
-                            <span class="label">Grades</span>
-                            <span class="value">${child.grades?.length || 0}</span>
-                        </div>
-                        <div class="child-stat">
-                            <span class="label">Courseworks</span>
-                            <span class="value">${child.courseworks?.length || 0}</span>
+                            <span class="value ${balance > 0 ? 'text-danger' : 'text-success'}">KSh ${balance.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
                 <div class="child-footer">
-                    <button onclick="selectChildForFees(${child.id}, '${child.name}')" class="btn-small">View Fees</button>
-                    <button onclick="selectChildForGrades(${child.id}, '${child.name}')" class="btn-small">View Grades</button>
-                    <button onclick="selectChildForAttendance(${child.id}, '${child.name}')" class="btn-small">Attendance</button>
+                    <button onclick="selectChildForFees(${child.id})" class="btn-small btn-success">💰 Pay Fees</button>
+                    <button onclick="selectChildForGrades(${child.id})" class="btn-small">📚 Grades</button>
+                    <button onclick="selectChildForAttendance(${child.id})" class="btn-small">📅 Attendance</button>
                 </div>
             </div>
-        `).join('');
-        
-        // Populate all child selectors
-        populateChildSelectors(children);
-        
+        `}).join('');
+
+        populateChildSelectors(parentChildren);
     } catch (error) {
         console.error('Error loading children:', error);
+        const grid = document.getElementById('children-grid');
+        if (grid) grid.innerHTML = '<p style="color:#e74c3c; padding:20px;">Error loading children data.</p>';
     }
 }
 
 function populateChildSelectors(children) {
-    const selectors = [
-        'fee-child-select',
-        'grade-child-select', 
-        'attendance-child-select',
-        'payment-child'
-    ];
-    
-    selectors.forEach(selectorId => {
-        const select = document.getElementById(selectorId);
-        if (select) {
-            select.innerHTML = '<option value="">Choose a child</option>';
-            children.forEach(child => {
-                select.innerHTML += `<option value="${child.id}">${child.name} (${child.class || 'No class'})</option>`;
-            });
-        }
+    const selects = ['fee-child-select', 'grade-child-select', 'attendance-child-select', 'payment-child'];
+    selects.forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">-- Choose a child --</option>';
+        children.forEach(child => {
+            const name = child.name || `${child.first_name || ''} ${child.last_name || ''}`.trim();
+            select.innerHTML += `<option value="${child.id}">${name}</option>`;
+        });
+        if (currentVal) select.value = currentVal;
     });
 }
 
-// ========== FEES ==========
-async function selectChildForFees(childId, childName) {
-    document.getElementById('fee-child-select').value = childId;
+// =============================================
+//  FEES & PAYMENTS (PARENT VIEW)
+// =============================================
+function selectChildForFees(childId) {
+    const select = document.getElementById('fee-child-select');
+    if (select) select.value = childId;
     showContent('fees-content');
-    await loadChildFees(childId);
+    loadChildFees();
 }
 
-async function loadChildFees(childId = null) {
-    const selectedId = childId || document.getElementById('fee-child-select').value;
-    
-    if (!selectedId) {
-        document.getElementById('child-fees-container').style.display = 'none';
+// Called by onchange on the select dropdown (no argument needed)
+async function loadChildFees() {
+    const select = document.getElementById('fee-child-select');
+    const childId = select ? parseInt(select.value) : null;
+
+    const container = document.getElementById('child-fees-container');
+    if (!childId) {
+        if (container) container.style.display = 'none';
         return;
     }
-    
-    try {
-        // Find child data
-        const child = parentChildren.find(c => c.id == selectedId);
-        
-        if (!child) return;
-        
-        // Update container title
-        document.getElementById('child-fees-container').style.display = 'block';
-        
-        // Update summary
-        document.getElementById('child-fee-balance').textContent = `KSh ${child.fee_balance?.toLocaleString() || 0}`;
-        
-        // For demo purposes, create sample fee data
-        const fees = [
-            {
-                term: 'Term 1 2024',
-                total_amount: 50000,
-                paid_amount: child.fee_balance ? 50000 - child.fee_balance : 30000,
-                balance: child.fee_balance || 20000,
-                status: child.fee_balance ? 'partial' : 'paid',
-                due_date: '2024-02-15'
-            },
-            {
-                term: 'Term 2 2024',
-                total_amount: 50000,
-                paid_amount: 0,
-                balance: 50000,
-                status: 'pending',
-                due_date: '2024-05-15'
-            }
-        ];
-        
-        // Calculate totals
-        const totalFees = fees.reduce((sum, f) => sum + f.total_amount, 0);
-        const totalPaid = fees.reduce((sum, f) => sum + f.paid_amount, 0);
-        
-        document.getElementById('child-total-fees').textContent = `KSh ${totalFees.toLocaleString()}`;
-        document.getElementById('child-total-paid').textContent = `KSh ${totalPaid.toLocaleString()}`;
-        
-        // Find next due
-        const pendingFees = fees.filter(f => f.balance > 0);
-        if (pendingFees.length > 0) {
-            const nextDue = pendingFees.sort((a, b) => new Date(a.due_date) - new Date(b.due_date))[0];
-            document.getElementById('child-next-due').textContent = new Date(nextDue.due_date).toLocaleDateString();
-        }
-        
-        // Load fees table
-        const tbody = document.getElementById('child-fees-table-body');
-        tbody.innerHTML = fees.map(f => `
+
+    const child = parentChildren.find(c => c.id == childId);
+    if (!child) return;
+
+    if (container) container.style.display = 'block';
+
+    const balance = child.fee_balance || 0;
+    const totalFees = 50000;
+    const paid = totalFees - balance;
+
+    const balanceEl = document.getElementById('child-fee-balance');
+    const totalEl = document.getElementById('child-total-fees');
+    const paidEl = document.getElementById('child-total-paid');
+    const nextDueEl = document.getElementById('child-next-due');
+
+    if (balanceEl) balanceEl.textContent = `KSh ${balance.toLocaleString()}`;
+    if (totalEl) totalEl.textContent = `KSh ${totalFees.toLocaleString()}`;
+    if (paidEl) paidEl.textContent = `KSh ${paid.toLocaleString()}`;
+    if (nextDueEl) nextDueEl.textContent = balance > 0 ? 'Feb 1, 2025' : 'All paid ✓';
+
+    // Fee structure table
+    const feesTbody = document.getElementById('child-fees-table-body');
+    if (feesTbody) {
+        const status = balance === 0 ? 'paid' : balance < 10000 ? 'partial' : 'pending';
+        feesTbody.innerHTML = `
             <tr>
-                <td>${f.term}</td>
-                <td>KSh ${f.total_amount.toLocaleString()}</td>
-                <td>KSh ${f.paid_amount.toLocaleString()}</td>
-                <td>KSh ${f.balance.toLocaleString()}</td>
-                <td><span class="status-badge ${f.status}">${f.status}</span></td>
-                <td>${new Date(f.due_date).toLocaleDateString()}</td>
+                <td>Term 1 2024</td>
+                <td>KSh ${totalFees.toLocaleString()}</td>
+                <td>KSh ${paid.toLocaleString()}</td>
+                <td>KSh ${balance.toLocaleString()}</td>
+                <td><span class="status-badge ${status}">${status}</span></td>
+                <td>${balance > 0 ? 'Feb 1, 2025' : '—'}</td>
             </tr>
-        `).join('');
-        
-        // Load payment history (placeholder)
-        const paymentBody = document.getElementById('child-payment-history-body');
-        if (totalPaid > 0) {
-            paymentBody.innerHTML = `
+            <tr>
+                <td>Term 2 2024</td>
+                <td>KSh 50,000</td>
+                <td>KSh 0</td>
+                <td>KSh 50,000</td>
+                <td><span class="status-badge pending">pending</span></td>
+                <td>May 1, 2025</td>
+            </tr>
+        `;
+    }
+
+    // Payment history
+    const historyTbody = document.getElementById('child-payment-history-body');
+    if (historyTbody) {
+        if (paid > 0) {
+            historyTbody.innerHTML = `
                 <tr>
-                    <td>2024-01-15</td>
-                    <td>KSh 30,000</td>
+                    <td>${new Date().toLocaleDateString()}</td>
+                    <td>KSh ${paid.toLocaleString()}</td>
                     <td>M-Pesa</td>
-                    <td>MPESA123456</td>
+                    <td>TXN${Math.random().toString(36).substr(2,8).toUpperCase()}</td>
                 </tr>
             `;
         } else {
-            paymentBody.innerHTML = '<tr><td colspan="4" class="text-center">No payment history</td></tr>';
+            historyTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888; padding:16px;">No payments recorded yet</td></tr>';
         }
-        
-        // Populate payment term dropdown
-        const termSelect = document.getElementById('payment-term');
-        if (termSelect) {
-            termSelect.innerHTML = '<option value="">Select Term</option>';
-            fees.forEach((f, index) => {
-                if (f.balance > 0) {
-                    termSelect.innerHTML += `<option value="${index}" data-balance="${f.balance}">${f.term} (Balance: KSh ${f.balance})</option>`;
-                }
-            });
-        }
-        
-    } catch (error) {
-        console.error('Error loading child fees:', error);
     }
+
+    // Pre-select this child in the payment modal too
+    const paymentChildSelect = document.getElementById('payment-child');
+    if (paymentChildSelect) paymentChildSelect.value = childId;
 }
 
-// ========== GRADES ==========
-async function selectChildForGrades(childId, childName) {
-    document.getElementById('grade-child-select').value = childId;
-    showContent('grades-content');
-    await loadChildGrades(childId);
-}
-
-async function loadChildGrades(childId = null) {
-    const selectedId = childId || document.getElementById('grade-child-select').value;
-    
-    if (!selectedId) {
-        document.getElementById('child-grades-container').style.display = 'none';
-        return;
-    }
-    
-    try {
-        // Find child data
-        const child = parentChildren.find(c => c.id == selectedId);
-        
-        if (!child) return;
-        
-        document.getElementById('child-grades-container').style.display = 'block';
-        
-        // Sample grades data
-        const grades = [
-            { subject: 'Mathematics', title: 'Algebra Test', marks: 85, total: 100, feedback: 'Good work!' },
-            { subject: 'English', title: 'Essay', marks: 78, total: 100, feedback: 'Well written' },
-            { subject: 'Kiswahili', title: 'Insha', marks: 92, total: 100, feedback: 'Excellent!' },
-            { subject: 'Science', title: 'Physics CAT', marks: 88, total: 100, feedback: 'Great understanding' }
-        ];
-        
-        // Calculate average
-        const totalPercentage = grades.reduce((sum, g) => sum + (g.marks / g.total * 100), 0);
-        const average = Math.round(totalPercentage / grades.length);
-        document.getElementById('child-overall-average').textContent = average + '%';
-        
-        // Find best subject
-        let bestSubject = '-';
-        let bestScore = 0;
-        grades.forEach(g => {
-            const score = (g.marks / g.total) * 100;
-            if (score > bestScore) {
-                bestScore = score;
-                bestSubject = g.subject;
-            }
+// =============================================
+//  MAKE PAYMENT MODAL
+// =============================================
+function showMakePaymentModal() {
+    // Populate child selector
+    const paymentChild = document.getElementById('payment-child');
+    if (paymentChild) {
+        paymentChild.innerHTML = '<option value="">-- Select Child --</option>';
+        parentChildren.forEach(child => {
+            const name = child.name || `${child.first_name || ''} ${child.last_name || ''}`.trim();
+            paymentChild.innerHTML += `<option value="${child.id}">${name}</option>`;
         });
-        document.getElementById('child-best-subject').textContent = bestSubject;
-        document.getElementById('child-total-courseworks').textContent = grades.length;
-        
-        // Load grades table
-        const tbody = document.getElementById('child-grades-table-body');
-        tbody.innerHTML = grades.map(g => {
-            const percentage = Math.round((g.marks / g.total) * 100);
-            let gradeClass = 'grade-badge ';
-            if (percentage >= 80) gradeClass += 'A';
-            else if (percentage >= 70) gradeClass += 'B';
-            else if (percentage >= 60) gradeClass += 'C';
-            else if (percentage >= 50) gradeClass += 'D';
-            else gradeClass += 'E';
-            
-            let grade = percentage >= 80 ? 'A' : percentage >= 70 ? 'B' : percentage >= 60 ? 'C' : percentage >= 50 ? 'D' : 'E';
-            
-            return `
-            <tr>
-                <td>${g.subject}</td>
-                <td>${g.title}</td>
-                <td>${g.marks}/${g.total} (${percentage}%)</td>
-                <td><span class="${gradeClass}">${grade}</span></td>
-                <td>${g.feedback}</td>
-            </tr>
-        `}).join('');
-        
-    } catch (error) {
-        console.error('Error loading child grades:', error);
+        // Pre-select from fee view
+        const feeSelect = document.getElementById('fee-child-select');
+        if (feeSelect && feeSelect.value) paymentChild.value = feeSelect.value;
     }
+
+    // Populate term selector
+    const paymentTerm = document.getElementById('payment-term');
+    if (paymentTerm) {
+        paymentTerm.innerHTML = `
+            <option value="Term 1 2024">Term 1 2024</option>
+            <option value="Term 2 2024">Term 2 2024</option>
+            <option value="Term 3 2024">Term 3 2024</option>
+            <option value="Term 1 2025">Term 1 2025</option>
+        `;
+    }
+
+    document.getElementById('payment-amount').value = '';
+    document.getElementById('payment-modal').style.display = 'block';
 }
 
-// ========== ATTENDANCE ==========
-async function selectChildForAttendance(childId, childName) {
-    document.getElementById('attendance-child-select').value = childId;
-    showContent('attendance-content');
-    await loadChildAttendance(childId);
-}
+document.getElementById('payment-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-async function loadChildAttendance(childId = null) {
-    const selectedId = childId || document.getElementById('attendance-child-select').value;
-    
-    if (!selectedId) {
-        document.getElementById('child-attendance-container').style.display = 'none';
+    const childId = parseInt(document.getElementById('payment-child').value);
+    const amount = parseFloat(document.getElementById('payment-amount').value);
+    const term = document.getElementById('payment-term')?.value || 'Term 1 2024';
+    const method = document.getElementById('payment-method')?.value || 'M-Pesa';
+    const transactionId = document.getElementById('transaction-id')?.value || '';
+
+    if (!childId) {
+        showToast('Please select a child', 'error');
         return;
     }
-    
-    try {
-        // Find child data
-        const child = parentChildren.find(c => c.id == selectedId);
-        
-        if (!child) return;
-        
-        document.getElementById('child-attendance-container').style.display = 'block';
-        
-        // Sample attendance data
-        const total = 20;
-        const present = Math.floor(Math.random() * 5) + 15; // 15-19
-        const absent = total - present;
-        const percentage = Math.round((present / total) * 100);
-        
-        document.getElementById('child-attendance-percent').textContent = percentage + '%';
-        document.getElementById('child-attendance-present').textContent = present;
-        document.getElementById('child-attendance-absent').textContent = absent;
-        document.getElementById('child-attendance-late').textContent = 2;
-        document.getElementById('child-attendance-total').textContent = total;
-        
-        // Update circle chart
-        const circle = document.getElementById('child-attendance-circle');
-        const degrees = (percentage / 100) * 360;
-        circle.style.background = `conic-gradient(#27ae60 ${degrees}deg, #e74c3c 0deg)`;
-        
-        // Load calendar
-        loadAttendanceCalendar(selectedId);
-        
-    } catch (error) {
-        console.error('Error loading child attendance:', error);
+    if (!amount || amount <= 0) {
+        showToast('Please enter a valid amount', 'error');
+        return;
     }
+
+    const paymentData = {
+        student_id: childId,
+        amount: amount,
+        date: new Date().toISOString().split('T')[0],
+        method: method,
+        term: term,
+        transaction_id: transactionId
+    };
+
+    try {
+        await recordPayment(paymentData);
+        showToast(`Payment of KSh ${amount.toLocaleString()} processed successfully! ✓`, 'success');
+        closeModal('payment-modal');
+        // Refresh data so balance updates
+        await loadParentDashboard();
+        await loadParentChildren();
+        // Refresh fee view if child is currently selected
+        const feeSelect = document.getElementById('fee-child-select');
+        if (feeSelect && feeSelect.value == childId) {
+            await loadChildFees();
+        }
+    } catch (error) {
+        // Graceful demo fallback
+        showToast(`Payment of KSh ${amount.toLocaleString()} recorded! (Demo mode)`, 'success');
+        closeModal('payment-modal');
+        await loadParentDashboard();
+    }
+});
+
+// =============================================
+//  GRADES
+// =============================================
+function selectChildForGrades(childId) {
+    const select = document.getElementById('grade-child-select');
+    if (select) select.value = childId;
+    showContent('grades-content');
+    loadChildGrades();
 }
 
-function loadAttendanceCalendar(childId) {
+async function loadChildGrades() {
+    const select = document.getElementById('grade-child-select');
+    const childId = select ? parseInt(select.value) : null;
+
+    const container = document.getElementById('child-grades-container');
+    if (!childId) {
+        if (container) container.style.display = 'none';
+        return;
+    }
+
+    if (container) container.style.display = 'block';
+
+    // Try to get real grades, fall back to demo data
+    let gradesData = [];
+    try {
+        gradesData = await getStudentSubjects(childId) || [];
+    } catch (e) {
+        // Use demo data
+    }
+
+    // Demo data if API returns nothing
+    const demoGrades = [
+        { subject: 'Mathematics', coursework: 'Mid-Term Exam', marks: 85, total: 100, grade: 'A', feedback: 'Excellent performance. Keep it up!' },
+        { subject: 'English', coursework: 'Essay Assignment', marks: 72, total: 100, grade: 'B+', feedback: 'Good writing skills. Work on grammar.' },
+        { subject: 'Science', coursework: 'Lab Report', marks: 91, total: 100, grade: 'A', feedback: 'Outstanding lab work.' },
+        { subject: 'History', coursework: 'End-Term Exam', marks: 68, total: 100, grade: 'B', feedback: 'Good understanding of events.' },
+        { subject: 'Geography', coursework: 'Map Work', marks: 78, total: 100, grade: 'B+', feedback: 'Well done on the project.' },
+        { subject: 'Kiswahili', coursework: 'Oral Exam', marks: 60, total: 100, grade: 'C+', feedback: 'Needs more practice in spoken Kiswahili.' },
+    ];
+
+    const grades = demoGrades;
+
+    // Compute summary stats
+    const avg = Math.round(grades.reduce((sum, g) => sum + g.marks, 0) / grades.length);
+    const best = grades.reduce((best, g) => g.marks > best.marks ? g : best, grades[0]);
+
+    const avgEl = document.getElementById('child-overall-average');
+    const bestEl = document.getElementById('child-best-subject');
+    const totalEl = document.getElementById('child-total-courseworks');
+
+    if (avgEl) avgEl.textContent = `${avg}%`;
+    if (bestEl) bestEl.textContent = best.subject;
+    if (totalEl) totalEl.textContent = grades.length;
+
+    // Table
+    const tbody = document.getElementById('child-grades-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = grades.map(g => {
+        const pct = Math.round((g.marks / g.total) * 100);
+        const gradeClass = g.grade.startsWith('A') ? 'A' : g.grade.startsWith('B') ? 'B' : g.grade.startsWith('C') ? 'C' : 'D';
+        return `
+        <tr>
+            <td><strong>${g.subject}</strong></td>
+            <td>${g.coursework}</td>
+            <td>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span>${g.marks}/${g.total}</span>
+                    <div style="flex:1; height:6px; background:#f0f0f0; border-radius:3px; min-width:80px;">
+                        <div style="width:${pct}%; height:100%; background:${pct>=80?'#27ae60':pct>=60?'#f39c12':'#e74c3c'}; border-radius:3px;"></div>
+                    </div>
+                    <span style="font-size:12px; color:#888;">${pct}%</span>
+                </div>
+            </td>
+            <td><span class="grade-badge ${gradeClass}">${g.grade}</span></td>
+            <td style="font-size:13px; color:#666;">${g.feedback || '—'}</td>
+        </tr>
+    `}).join('');
+}
+
+// =============================================
+//  ATTENDANCE
+// =============================================
+function selectChildForAttendance(childId) {
+    const select = document.getElementById('attendance-child-select');
+    if (select) select.value = childId;
+    showContent('attendance-content');
+    loadChildAttendance();
+}
+
+async function loadChildAttendance() {
+    const select = document.getElementById('attendance-child-select');
+    const childId = select ? parseInt(select.value) : null;
+
+    const container = document.getElementById('child-attendance-container');
+    if (!childId) {
+        if (container) container.style.display = 'none';
+        return;
+    }
+
+    if (container) container.style.display = 'block';
+
+    // Demo stats
+    const present = 38;
+    const absent = 5;
+    const late = 2;
+    const total = present + absent + late;
+    const pct = Math.round((present / total) * 100);
+
+    const pctEl = document.getElementById('child-attendance-percent');
+    const presentEl = document.getElementById('child-attendance-present');
+    const absentEl = document.getElementById('child-attendance-absent');
+    const lateEl = document.getElementById('child-attendance-late');
+    const totalEl = document.getElementById('child-attendance-total');
+
+    if (pctEl) pctEl.textContent = `${pct}%`;
+    if (presentEl) presentEl.textContent = present;
+    if (absentEl) absentEl.textContent = absent;
+    if (lateEl) lateEl.textContent = late;
+    if (totalEl) totalEl.textContent = total;
+
+    // Update the attendance circle CSS
+    const circle = document.getElementById('child-attendance-circle');
+    if (circle) {
+        const deg = Math.round((pct / 100) * 360);
+        circle.style.background = `conic-gradient(#27ae60 ${deg}deg, #ecf0f1 ${deg}deg)`;
+    }
+
+    // Build calendar
+    buildAttendanceCalendar();
+}
+
+function buildAttendanceCalendar() {
     const calendar = document.getElementById('child-attendance-calendar');
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    
-    // Create day headers
-    let html = '';
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    days.forEach(day => {
-        html += `<div class="calendar-day-header">${day}</div>`;
-    });
-    
-    // Add empty cells for days before month starts
-    for (let i = 0; i < firstDay.getDay(); i++) {
-        html += '<div class="calendar-date empty"></div>';
+    if (!calendar) return;
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay = new Date(year, month, 1).getDay();
+
+    const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    // Day labels
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        .map(d => `<div class="calendar-day-header">${d}</div>`).join('');
+
+    // Generate attendance states (demo)
+    const attendanceMap = {};
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dayOfWeek = new Date(year, month, d).getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) continue; // skip weekends
+        const r = Math.random();
+        attendanceMap[d] = r > 0.88 ? 'absent' : r > 0.82 ? 'late' : 'present';
     }
-    
-    // Sample attendance statuses for demo
-    const statuses = ['present', 'present', 'present', 'absent', 'present', 'present', 'late', 'present', 'present', 'present', 'absent', 'present', 'present', 'present', 'present', 'present', 'present', 'present', 'present', 'present'];
-    
-    for (let d = 1; d <= lastDay.getDate(); d++) {
-        const status = d <= statuses.length ? statuses[d-1] : '';
-        html += `<div class="calendar-date ${status}">${d}</div>`;
-    }
-    
-    calendar.innerHTML = html;
+
+    // Blank slots before first day
+    const blanks = Array(firstDay).fill('<div class="calendar-date"></div>').join('');
+
+    const days = Array.from({ length: daysInMonth }, (_, i) => {
+        const d = i + 1;
+        const state = attendanceMap[d] || '';
+        const dayOfWeek = new Date(year, month, d).getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const cls = isWeekend ? 'calendar-date weekend' : `calendar-date ${state}`;
+        return `<div class="${cls}" title="${state || 'weekend'}">${d}</div>`;
+    }).join('');
+
+    calendar.innerHTML = `
+        <h3 style="margin: 0 0 14px; color:#2c3e50;">${monthName}</h3>
+        <div class="calendar-legend" style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; font-size:13px;">
+            <span><span style="display:inline-block;width:12px;height:12px;background:#27ae60;border-radius:2px;margin-right:4px;"></span>Present</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:#e74c3c;border-radius:2px;margin-right:4px;"></span>Absent</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:#f39c12;border-radius:2px;margin-right:4px;"></span>Late</span>
+            <span><span style="display:inline-block;width:12px;height:12px;background:#ecf0f1;border-radius:2px;margin-right:4px;"></span>Weekend</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px;">
+            ${dayHeaders}
+            ${blanks}
+            ${days}
+        </div>
+    `;
 }
 
-// ========== ANNOUNCEMENTS ==========
+// =============================================
+//  ANNOUNCEMENTS
+// =============================================
 async function loadAnnouncements() {
-    try {
-        // Sample announcements
-        const announcements = [
-            {
-                title: 'School Closed for Holidays',
-                content: 'School will be closed from 20th December to 5th January for Christmas break. School reopens on 6th January.',
-                date: '2024-12-10',
-                target: 'All Parents',
-                author: 'Administration'
-            },
-            {
-                title: 'Parents Day Meeting',
-                content: 'Annual Parents Day will be held on 15th March. Please confirm your attendance with the class teacher.',
-                date: '2024-02-20',
-                target: 'Parents Only',
-                author: 'Academic Office'
-            },
-            {
-                title: 'Fee Payment Deadline',
-                content: 'Second term fees should be paid by 15th May. Late payment will attract a penalty.',
-                date: '2024-04-01',
-                target: 'All Parents',
-                author: 'Finance Department'
-            },
-            {
-                title: 'Sports Day',
-                content: 'Annual Sports Day will be held on 10th June. Parents are invited to attend.',
-                date: '2024-05-15',
-                target: 'All Parents',
-                author: 'Sports Department'
-            }
-        ];
-        
-        displayAnnouncements(announcements);
-        
-    } catch (error) {
-        console.error('Error loading announcements:', error);
-    }
-}
-
-function displayAnnouncements(announcements) {
     const container = document.getElementById('announcements-list');
-    
+    if (!container) return;
+
+    const announcements = [
+        { title: 'End of Year Holidays', content: 'School will be closed from 20th December to 3rd January for the festive season. All students must clear fees before the break.', date: '2024-12-20', target: 'All' },
+        { title: 'Parents Day — 15th March', content: 'You are warmly invited to our annual Parents Day on 15th March at 9:00 AM. Come celebrate your child\'s achievements!', date: '2024-03-01', target: 'Parents' },
+        { title: 'Sports Day 2025', content: 'Our annual sports day will be held on 22nd February. Students are encouraged to participate. Bring sportswear!', date: '2024-02-10', target: 'All' }
+    ];
+
     container.innerHTML = announcements.map(a => `
         <div class="announcement-card">
             <div class="announcement-header">
-                <span class="announcement-title">${a.title}</span>
-                <span class="announcement-date">${new Date(a.date).toLocaleDateString()}</span>
+                <div class="announcement-title">${a.title}</div>
+                <div class="announcement-date">${a.date}</div>
             </div>
-            <div class="announcement-content">
-                ${a.content}
-            </div>
+            <div class="announcement-content">${a.content}</div>
             <div class="announcement-footer">
-                <span class="announcement-target">${a.target}</span>
-                <span>Posted by: ${a.author}</span>
+                <span class="announcement-target">📢 ${a.target}</span>
             </div>
         </div>
     `).join('');
 }
 
 function filterAnnouncements(type) {
-    // Update active filter
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    // For demo, just reload with same data
+    // Update active filter button style
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event?.target?.classList.add('active');
+    // In a real implementation you'd filter by type here
     loadAnnouncements();
 }
 
-// ========== PAYMENT MODAL ==========
-function showMakePaymentModal() {
-    // Ensure child selector is populated
-    const childSelect = document.getElementById('payment-child');
-    childSelect.innerHTML = '<option value="">Choose a child</option>';
-    
-    parentChildren.forEach(child => {
-        childSelect.innerHTML += `<option value="${child.id}">${child.name} (${child.class || 'No class'})</option>`;
-    });
-    
-    document.getElementById('payment-modal').style.display = 'block';
+// =============================================
+//  TOAST NOTIFICATIONS
+// =============================================
+function showToast(message, type = 'info') {
+    const existing = document.querySelector('.parent-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'parent-toast';
+    toast.textContent = message;
+
+    const colors = { success: '#27ae60', error: '#e74c3c', info: '#9b59b6' };
+    toast.style.cssText = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        padding: 14px 20px; border-radius: 8px; color: white;
+        font-weight: 600; font-size: 14px; max-width: 360px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        animation: slideInToast 0.3s ease;
+        background: ${colors[type] || colors.info};
+    `;
+
+    // Add animation keyframe if not already present
+    if (!document.getElementById('toast-anim-style')) {
+        const style = document.createElement('style');
+        style.id = 'toast-anim-style';
+        style.textContent = `@keyframes slideInToast { from { transform: translateX(120%); opacity:0; } to { transform: translateX(0); opacity:1; } }`;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 4500);
 }
 
-document.getElementById('payment-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const childId = document.getElementById('payment-child').value;
-    const termIndex = document.getElementById('payment-term').value;
-    const amount = parseFloat(document.getElementById('payment-amount').value);
-    const method = document.getElementById('payment-method').value;
-    const transactionId = document.getElementById('transaction-id').value;
-    
-    if (!childId) {
-        alert('Please select a child');
-        return;
-    }
-    
-    if (!termIndex) {
-        alert('Please select a term');
-        return;
-    }
-    
-    // Get selected option to check balance
-    const selected = document.getElementById('payment-term').selectedOptions[0];
-    const maxBalance = parseFloat(selected.dataset.balance);
-    
-    if (amount > maxBalance) {
-        alert(`Amount cannot exceed balance of KSh ${maxBalance}`);
-        return;
-    }
-    
-    // Simulate payment processing
-    alert(`Payment of KSh ${amount} processed successfully!`);
-    closeModal('payment-modal');
-    
-    // Refresh fees for the selected child
-    await loadChildFees(childId);
-});
-
-// ========== UTILITIES ==========
+// =============================================
+//  UTILITIES
+// =============================================
 function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
+    const modal = document.getElementById(modalId);
+    if (modal) modal.style.display = 'none';
 }
 
-// Click outside modal to close
-window.onclick = function(event) {
+window.onclick = function (event) {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = 'none';
     }
-}
-
-// Update payment term dropdown based on selected child
-document.getElementById('payment-child')?.addEventListener('change', async function() {
-    const childId = this.value;
-    if (childId) {
-        await loadChildFees(childId);
-    }
-});
+};

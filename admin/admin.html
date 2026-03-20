@@ -29,10 +29,11 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Dashboard Content -->
+
+            <!-- Dashboard -->
             <div id="dashboard-content" class="content-section active">
                 <h1>Dashboard</h1>
-                <div class="stats-grid" id="admin-stats">
+                <div class="stats-grid">
                     <div class="stat-card">
                         <h3>Total Students</h3>
                         <p id="total-students">0</p>
@@ -50,7 +51,6 @@
                         <p id="total-subjects">0</p>
                     </div>
                 </div>
-
                 <div class="dashboard-grid">
                     <div class="dashboard-card">
                         <h2>Recent Students</h2>
@@ -61,148 +61,474 @@
                         <div id="pending-fees" class="recent-list"></div>
                     </div>
                     <div class="dashboard-card">
-                        <h2>Upcoming Exams</h2>
-                        <div id="upcoming-exams" class="recent-list"></div>
+                        <h2>Recent Teachers</h2>
+                        <div id="recent-teachers" class="recent-list"></div>
                     </div>
                     <div class="dashboard-card">
                         <h2>Quick Actions</h2>
                         <div class="quick-actions">
-                            <button onclick="showContent('students-content')" class="btn btn-primary">Manage Students</button>
-                            <button onclick="showContent('teachers-content')" class="btn btn-primary">Manage Teachers</button>
-                            <button onclick="showContent('classes-content')" class="btn btn-primary">Manage Classes</button>
-                            <button onclick="showContent('fees-content')" class="btn btn-success">Record Payment</button>
+                            <button onclick="showContent('students-content')" class="btn btn-primary">📚 Manage Students</button>
+                            <button onclick="showContent('teachers-content')" class="btn btn-primary">👨‍🏫 Manage Teachers</button>
+                            <button onclick="showContent('classes-content')" class="btn btn-primary">🏫 Manage Classes</button>
+                            <button onclick="showAddFeeModal()" class="btn btn-success">💰 Record Payment</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Students Content -->
+            <!-- Students -->
             <div id="students-content" class="content-section">
                 <div class="section-header">
                     <h1>Students Management</h1>
-                    <button onclick="showAddStudentModal()" class="btn btn-primary">Add New Student</button>
+                    <button onclick="showAddStudentModal()" class="btn btn-primary">+ Add New Student</button>
                 </div>
-                
                 <div class="search-bar">
-                    <input type="text" id="student-search" placeholder="Search students..." onkeyup="searchStudents()">
+                    <input type="text" id="student-search" placeholder="Search students by name, admission no..." onkeyup="searchStudents()">
                     <select id="class-filter" onchange="filterStudents()">
                         <option value="">All Classes</option>
                     </select>
                 </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Admission No.</th>
-                            <th>Name</th>
-                            <th>Class</th>
-                            <th>Gender</th>
-                            <th>Parent</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="students-table-body"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Admission No.</th>
+                                <th>Name</th>
+                                <th>Class</th>
+                                <th>Gender</th>
+                                <th>Parent</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Teachers Content -->
+            <!-- Teachers -->
             <div id="teachers-content" class="content-section">
                 <div class="section-header">
                     <h1>Teachers Management</h1>
-                    <button onclick="showAddTeacherModal()" class="btn btn-primary">Add New Teacher</button>
+                    <button onclick="showAddTeacherModal()" class="btn btn-primary">+ Add New Teacher</button>
                 </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Employee ID</th>
-                            <th>Name</th>
-                            <th>Qualification</th>
-                            <th>Subjects</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="teachers-table-body"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Qualification</th>
+                                <th>Subjects</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teachers-table-body"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Classes Content -->
+            <!-- Classes -->
             <div id="classes-content" class="content-section">
                 <div class="section-header">
                     <h1>Classes Management</h1>
-                    <button onclick="showAddClassModal()" class="btn btn-primary">Add New Class</button>
+                    <button onclick="showAddClassModal()" class="btn btn-primary">+ Add New Class</button>
                 </div>
-
                 <div class="classes-grid" id="classes-grid"></div>
             </div>
 
-            <!-- Subjects Content -->
+            <!-- Subjects -->
             <div id="subjects-content" class="content-section">
                 <div class="section-header">
                     <h1>Subjects Management</h1>
-                    <button onclick="showAddSubjectModal()" class="btn btn-primary">Add New Subject</button>
+                    <button onclick="showAddSubjectModal()" class="btn btn-primary">+ Add New Subject</button>
                 </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Subject Code</th>
-                            <th>Subject Name</th>
-                            <th>Class</th>
-                            <th>Teacher</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="subjects-table-body"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Subject Code</th>
+                                <th>Subject Name</th>
+                                <th>Class</th>
+                                <th>Teacher</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subjects-table-body"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Fees Content -->
+            <!-- Fees -->
             <div id="fees-content" class="content-section">
                 <div class="section-header">
                     <h1>Fees Management</h1>
-                    <button onclick="showAddFeeModal()" class="btn btn-success">Record Payment</button>
+                    <button onclick="showAddFeeModal()" class="btn btn-success">💰 Record Payment</button>
                 </div>
-
                 <div class="search-bar">
-                    <input type="text" id="fee-search" placeholder="Search student...">
+                    <input type="text" id="fee-search" placeholder="Search student..." oninput="searchFees()">
                 </div>
-
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Term</th>
-                            <th>Total Amount</th>
-                            <th>Paid</th>
-                            <th>Balance</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="fees-table-body"></tbody>
-                </table>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Class</th>
+                                <th>Term</th>
+                                <th>Total Amount</th>
+                                <th>Paid</th>
+                                <th>Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fees-table-body"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Announcements Content -->
+            <!-- Announcements -->
             <div id="announcements-content" class="content-section">
                 <div class="section-header">
                     <h1>Announcements</h1>
-                    <button onclick="showAddAnnouncementModal()" class="btn btn-primary">New Announcement</button>
+                    <button onclick="showAddAnnouncementModal()" class="btn btn-primary">+ New Announcement</button>
                 </div>
-
                 <div id="announcements-list" class="announcements-grid"></div>
             </div>
-        </div>
-    </div>
 
-    <!-- Modals (Add/Edit) -->
+        </div><!-- end main-content -->
+    </div><!-- end container -->
+
+
+    <!-- ===== STUDENT MODAL ===== -->
     <div id="student-modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('student-modal')">&times;</span>
-            <h2>Add/Edit Student</h2>
+            <h2 id="student-modal-title">Add New Student</h2>
             <form id="student-form">
-                <!-- Form fields -->
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-firstname">First Name *</label>
+                        <input type="text" id="student-firstname" required placeholder="e.g. John">
+                    </div>
+                    <div class="form-group">
+                        <label for="student-lastname">Last Name *</label>
+                        <input type="text" id="student-lastname" required placeholder="e.g. Doe">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-admission">Admission Number *</label>
+                        <input type="text" id="student-admission" required placeholder="e.g. ADM-2024-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="student-gender">Gender *</label>
+                        <select id="student-gender" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-email">Email</label>
+                        <input type="email" id="student-email" placeholder="student@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="student-phone">Phone</label>
+                        <input type="tel" id="student-phone" placeholder="e.g. 0712345678">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student-dob">Date of Birth</label>
+                        <input type="date" id="student-dob">
+                    </div>
+                    <div class="form-group">
+                        <label for="student-class">Class</label>
+                        <select id="student-class">
+                            <option value="">Select Class</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ✅ Parent field — correctly inside form, no stray divs -->
+                <div class="form-group">
+                    <label for="student-parent">Parent / Guardian</label>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <select id="student-parent" style="flex:1;">
+                            <option value="">Select Parent (Optional)</option>
+                        </select>
+                        <button type="button"
+                                onclick="showAddParentModal()"
+                                class="btn-small btn-success"
+                                style="white-space:nowrap; padding:8px 12px; height:40px;">
+                            + New Parent
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="student-address">Address</label>
+                    <input type="text" id="student-address" placeholder="Home address">
+                </div>
+
+                <!-- ✅ Save button — correctly inside form -->
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal('student-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Student</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== TEACHER MODAL ===== -->
+    <div id="teacher-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('teacher-modal')">&times;</span>
+            <h2 id="teacher-modal-title">Add New Teacher</h2>
+            <form id="teacher-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="teacher-firstname">First Name *</label>
+                        <input type="text" id="teacher-firstname" required placeholder="e.g. Jane">
+                    </div>
+                    <div class="form-group">
+                        <label for="teacher-lastname">Last Name *</label>
+                        <input type="text" id="teacher-lastname" required placeholder="e.g. Smith">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="teacher-employee-id">Employee ID *</label>
+                        <input type="text" id="teacher-employee-id" required placeholder="e.g. EMP-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="teacher-qualification">Qualification *</label>
+                        <input type="text" id="teacher-qualification" required placeholder="e.g. B.Ed Mathematics">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="teacher-email">Email *</label>
+                        <input type="email" id="teacher-email" required placeholder="teacher@school.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="teacher-phone">Phone</label>
+                        <input type="tel" id="teacher-phone" placeholder="e.g. 0712345678">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="teacher-subjects">Subjects Taught</label>
+                    <input type="text" id="teacher-subjects" placeholder="e.g. Mathematics, Physics">
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal('teacher-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Teacher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== CLASS MODAL ===== -->
+    <div id="class-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('class-modal')">&times;</span>
+            <h2 id="class-modal-title">Add New Class</h2>
+            <form id="class-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="class-name">Class Name *</label>
+                        <input type="text" id="class-name" required placeholder="e.g. Form 1A">
+                    </div>
+                    <div class="form-group">
+                        <label for="class-academic-year">Academic Year *</label>
+                        <input type="text" id="class-academic-year" required placeholder="e.g. 2024">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="class-teacher">Class Teacher</label>
+                        <select id="class-teacher">
+                            <option value="">Select Teacher (Optional)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="class-capacity">Capacity</label>
+                        <input type="number" id="class-capacity" value="40" min="1" max="100">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal('class-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== SUBJECT MODAL ===== -->
+    <div id="subject-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('subject-modal')">&times;</span>
+            <h2 id="subject-modal-title">Add New Subject</h2>
+            <form id="subject-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subject-name">Subject Name *</label>
+                        <input type="text" id="subject-name" required placeholder="e.g. Mathematics">
+                    </div>
+                    <div class="form-group">
+                        <label for="subject-code">Subject Code *</label>
+                        <input type="text" id="subject-code" required placeholder="e.g. MATH101">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subject-class">Class *</label>
+                        <select id="subject-class" required>
+                            <option value="">Select Class</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject-teacher">Teacher</label>
+                        <select id="subject-teacher">
+                            <option value="">Select Teacher (Optional)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal('subject-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== FEE / PAYMENT MODAL ===== -->
+    <div id="fee-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('fee-modal')">&times;</span>
+            <h2>Record Payment</h2>
+            <form id="fee-form">
+                <div class="form-group">
+                    <label for="fee-student">Student *</label>
+                    <select id="fee-student" required>
+                        <option value="">Select Student</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fee-term">Term *</label>
+                    <select id="fee-term" required>
+                        <option value="Term 1 2024">Term 1 2024</option>
+                        <option value="Term 2 2024">Term 2 2024</option>
+                        <option value="Term 3 2024">Term 3 2024</option>
+                        <option value="Term 1 2025">Term 1 2025</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fee-amount">Amount (KSh) *</label>
+                    <input type="number" id="fee-amount" required min="1" placeholder="e.g. 15000">
+                </div>
+                <div class="form-group">
+                    <label for="fee-method">Payment Method</label>
+                    <select id="fee-method">
+                        <option value="M-Pesa">M-Pesa</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fee-transaction-id">Transaction ID (Optional)</label>
+                    <input type="text" id="fee-transaction-id" placeholder="e.g. QKJ12345">
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal('fee-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-success">💰 Record Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== ANNOUNCEMENT MODAL ===== -->
+    <div id="announcement-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('announcement-modal')">&times;</span>
+            <h2>New Announcement</h2>
+            <form id="announcement-form">
+                <div class="form-group">
+                    <label for="announcement-title">Title *</label>
+                    <input type="text" id="announcement-title" required placeholder="Announcement title">
+                </div>
+                <div class="form-group">
+                    <label for="announcement-target">Target Audience</label>
+                    <select id="announcement-target">
+                        <option value="All">All</option>
+                        <option value="Students">Students</option>
+                        <option value="Parents">Parents</option>
+                        <option value="Teachers">Teachers</option>
+                        <option value="Staff">Staff</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="announcement-content">Content *</label>
+                    <textarea id="announcement-content" required rows="5" placeholder="Write your announcement here..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal('announcement-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Post Announcement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== PARENT MODAL ===== -->
+    <div id="parent-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('parent-modal')">&times;</span>
+            <h2 id="parent-modal-title">Add New Parent</h2>
+            <form id="parent-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="parent-firstname">First Name *</label>
+                        <input type="text" id="parent-firstname" required placeholder="e.g. James">
+                    </div>
+                    <div class="form-group">
+                        <label for="parent-lastname">Last Name *</label>
+                        <input type="text" id="parent-lastname" required placeholder="e.g. Kamau">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="parent-email">Email *</label>
+                        <input type="email" id="parent-email" required placeholder="parent@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="parent-phone">Phone</label>
+                        <input type="tel" id="parent-phone" placeholder="e.g. 0712345678">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="parent-occupation">Occupation</label>
+                    <input type="text" id="parent-occupation" placeholder="e.g. Engineer">
+                </div>
+                <div class="form-group">
+                    <label for="parent-address">Address</label>
+                    <input type="text" id="parent-address" placeholder="Home address">
+                </div>
+                <div class="form-actions">
+                    <button type="button" onclick="closeModal('parent-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Parent</button>
+                </div>
             </form>
         </div>
     </div>

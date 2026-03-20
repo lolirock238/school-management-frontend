@@ -692,3 +692,159 @@ body {
 .hidden {
     display: none;
 }
+/* Additional Admin Styles */
+.actions-cell {
+    white-space: nowrap;
+    width: 120px;
+}
+
+.actions-cell .btn-small {
+    margin: 0 2px;
+    padding: 5px 8px;
+}
+
+.table-container {
+    overflow-x: auto;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.detail-card {
+    padding: 20px;
+}
+
+.detail-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row strong {
+    display: inline-block;
+    width: 120px;
+    color: #34495e;
+}
+
+.view-details {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.announcement-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.recent-item {
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.recent-item:hover {
+    background: #e8f4fd;
+}
+
+.class-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.class-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+/* Loading state */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+/* Status badges */
+.status-badge.paid {
+    background: #27ae60;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.status-badge.pending {
+    background: #e74c3c;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.status-badge.partial {
+    background: #f39c12;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+/* Search bar improvements */
+.search-bar {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.search-bar input,
+.search-bar select {
+    border: 1px solid #ddd;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.search-bar input:focus,
+.search-bar select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+}
+
+/* Modal improvements */
+.modal-content {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Quick actions */
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quick-actions button {
+    width: 100%;
+    text-align: left;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quick-actions button:hover {
+    transform: translateX(5px);
+}

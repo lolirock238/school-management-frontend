@@ -618,3 +618,373 @@
         text-align: center;
     }
 }
+/* ===== ADD THESE STYLES TO YOUR EXISTING parent.css ===== */
+
+/* Notification styles (for success/error messages) */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+}
+
+.notification-success {
+    background: #27ae60;
+}
+
+.notification-error {
+    background: #e74c3c;
+}
+
+.notification-info {
+    background: #3498db;
+}
+
+/* Mini table for payment history */
+.mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.mini-table th {
+    background: #f8f9fa;
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.mini-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.mini-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Child stats grid - enhanced */
+.child-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.child-stat-item {
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.stat-label {
+    display: block;
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Text colors */
+.text-success {
+    color: #27ae60;
+}
+
+.text-warning {
+    color: #f39c12;
+}
+
+.text-danger {
+    color: #e74c3c;
+}
+
+/* Enhanced calendar styles */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.calendar-weekday {
+    text-align: center;
+    font-weight: bold;
+    color: #2c3e50;
+    padding: 10px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid #ecf0f1;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.calendar-day:hover {
+    background: #f8f9fa;
+    transform: scale(1.05);
+}
+
+.calendar-day.present {
+    background: #27ae60;
+    color: white;
+    border-color: #27ae60;
+}
+
+.calendar-day.absent {
+    background: #e74c3c;
+    color: white;
+    border-color: #e74c3c;
+}
+
+.calendar-day.late {
+    background: #f39c12;
+    color: white;
+    border-color: #f39c12;
+}
+
+.calendar-day.excused {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.calendar-day.empty {
+    background: #f8f9fa;
+    border-color: #f8f9fa;
+    cursor: default;
+}
+
+.calendar-day.empty:hover {
+    transform: none;
+    background: #f8f9fa;
+}
+
+/* Loading state */
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+}
+
+.loading-spinner::after {
+    content: '';
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    margin-left: 10px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #9b59b6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Empty states */
+.text-center {
+    text-align: center;
+    padding: 20px;
+    color: #7f8c8d;
+}
+
+/* Detail view in modal */
+.detail-card {
+    padding: 20px;
+}
+
+.detail-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row strong {
+    display: inline-block;
+    width: 120px;
+    color: #34495e;
+}
+
+.view-details {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Payment history section */
+.payment-history {
+    margin-top: 30px;
+}
+
+.payment-history h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+/* Recent items clickable */
+.recent-item {
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.recent-item:hover {
+    background: #f3e8fc;
+}
+
+/* Button variants */
+.btn-small {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-small.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-small.btn-success:hover {
+    background: #229954;
+}
+
+.btn-small.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-small.btn-danger:hover {
+    background: #c0392b;
+}
+
+/* Modal animations */
+.modal-content {
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .calendar-weekday,
+    .calendar-day {
+        font-size: 12px;
+    }
+    
+    .detail-row strong {
+        display: block;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    .child-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .attendance-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Form validation styles */
+input:invalid,
+select:invalid {
+    border-color: #e74c3c;
+}
+
+input:valid,
+select:valid {
+    border-color: #27ae60;
+}
+
+/* Hover effects for cards */
+.child-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.child-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(155, 89, 182, 0.2);
+}
+
+/* Attendance circle enhancement */
+.attendance-circle {
+    transition: all 0.3s ease;
+}
+
+.attendance-circle:hover {
+    transform: scale(1.05);
+}
+
+/* Fee balance animation */
+.fee-balance-large p {
+    transition: color 0.3s;
+}
+
+.fee-balance-large p:hover {
+    color: #c0392b;
+}
